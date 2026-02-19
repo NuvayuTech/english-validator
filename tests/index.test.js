@@ -307,3 +307,86 @@ describe("word-level detection", () => {
     ).toBe(true);
   });
 });
+
+describe("customPatterns", () => {
+  test("removes custom regex patterns before validation", () => {
+    // JIRA-1234 style ticket IDs would normally interfere
+    const text = "JIRA-1234 PROJ-567 the quick brown fox jumps over lazy dog";
+    const patterns = [/\b[A-Z]+-\d+\b/g];
+    expect(isEnglish(text, { customPatterns: patterns })).toBe(true);
+  });
+
+  test("removes multiple custom patterns", () => {
+    const text = "REF#123 [TAG] the quick brown fox jumps over the lazy dog";
+    const patterns = [/REF#\d+/g, /\[TAG\]/g];
+    expect(isEnglish(text, { customPatterns: patterns })).toBe(true);
+  });
+
+  test("works without customPatterns (backward compatible)", () => {
+    expect(isEnglish("Hello world")).toBe(true);
+  });
+
+  test("empty customPatterns array has no effect", () => {
+    expect(isEnglish("Hello world", { customPatterns: [] })).toBe(true);
+  });
+});
+
+describe("excludeWords", () => {
+  test("removes excluded words before validation", () => {
+    const text = "GmbH Aktiengesellschaft the quick brown fox jumps over dog";
+    expect(isEnglish(text, { excludeWords: ["GmbH", "Aktiengesellschaft"] })).toBe(true);
+  });
+
+  test("exclude is case-insensitive", () => {
+    const text = "SDK API the quick brown fox jumps over the lazy dog";
+    expect(isEnglish(text, { excludeWords: ["sdk", "api"] })).toBe(true);
+  });
+
+  test("only removes whole words (not substrings)", () => {
+    // "the" should not be removed from "theater"
+    const text = "the theater is beautiful and wonderful today";
+    expect(isEnglish(text, { excludeWords: ["the"] })).toBe(true);
+  });
+
+  test("works without excludeWords (backward compatible)", () => {
+    expect(isEnglish("Hello world")).toBe(true);
+  });
+
+  test("empty excludeWords array has no effect", () => {
+    expect(isEnglish("Hello world", { excludeWords: [] })).toBe(true);
+  });
+
+  test("combined customPatterns and excludeWords", () => {
+    const text = "TICKET-99 GmbH the quick brown fox jumps over the lazy dog";
+    expect(
+      isEnglish(text, {
+        customPatterns: [/\bTICKET-\d+\b/g],
+        excludeWords: ["GmbH"],
+      })
+    ).toBe(true);
+  });
+});
+
+describe("allowAbbreviations", () => {
+  test("uppercase abbreviations treated as English by default", () => {
+    expect(isEnglish("NATO FBI CIA are important organizations")).toBe(true);
+  });
+
+  test("allowAbbreviations=false rejects unknown uppercase words", () => {
+    // These nonsense uppercase words are not in the dictionary and should not be
+    // treated as valid abbreviations when the flag is disabled.
+    expect(
+      detectNonEnglishText("XYZQW ABCDE LMNOP QRSTU the brown fox", {
+        allowAbbreviations: false,
+      })
+    ).toBe(true);
+  });
+
+  test("allowAbbreviations=true treats uppercase words as valid", () => {
+    expect(
+      isEnglish("NASA SDK API the quick brown fox jumps over lazy dog", {
+        allowAbbreviations: true,
+      })
+    ).toBe(true);
+  });
+});

@@ -11,8 +11,28 @@ export interface DetectionOptions {
   minWordLength?: number;
   /** Whether standalone numbers count as English words. Default: true */
   allowNumbers?: boolean;
-  /** Whether abbreviations are allowed. Default: true */
+  /** Whether uppercase abbreviations (e.g. NATO, FBI) count as English. Default: true */
   allowAbbreviations?: boolean;
+  /**
+   * Custom regex patterns to strip from text before validation.
+   * Use this to remove domain-specific identifiers, codes, or markup
+   * that would otherwise interfere with language detection.
+   *
+   * @example
+   * // Remove ticket IDs like JIRA-1234
+   * customPatterns: [/\b[A-Z]+-\d+\b/g]
+   */
+  customPatterns?: RegExp[];
+  /**
+   * Custom words to remove from text before validation.
+   * Case-insensitive, matches whole words only.
+   * Use this for domain-specific terms, brand names, abbreviations,
+   * or any tokens that should be ignored during detection.
+   *
+   * @example
+   * excludeWords: ["ACME", "GmbH", "SDK"]
+   */
+  excludeWords?: string[];
 }
 
 /** Internal result from franc trigram-based language analysis. */
@@ -106,6 +126,9 @@ const ENGLISH_CHARS_REGEX = /^[a-zA-Z0-9'-]+$/;
 
 /** Regex for standalone numeric strings. */
 const NUMBERS_ONLY_REGEX = /^\d+$/;
+
+/** Regex for uppercase abbreviations (2+ uppercase letters, optionally with digits). */
+const ABBREVIATION_REGEX = /^[A-Z]{2,}[0-9]*$/;
 
 // ─── Utility Helpers (DRY) ───────────────────────────────────────────────────
 
@@ -400,9 +423,32 @@ function isEnglishWordCached(word: string, options: WordOptions): boolean {
  * @param text - Raw input text
  * @returns Cleaned, normalised text ready for word and trigram analysis
  */
-function preprocessText(text: string): string {
+function preprocessText(
+  text: string,
+  customPatterns?: RegExp[],
+  excludeWords?: string[]
+): string {
   let processed = removeDocumentPatterns(text);
   processed = removeGeographicalTerms(processed);
+
+  // Apply user-supplied regex patterns
+  if (customPatterns && customPatterns.length > 0) {
+    for (const pattern of customPatterns) {
+      processed = processed.replace(pattern, "");
+    }
+  }
+
+  // Remove user-supplied words (case-insensitive, whole-word match)
+  if (excludeWords && excludeWords.length > 0) {
+    for (const word of excludeWords) {
+      const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      processed = processed.replace(
+        new RegExp(`\\b${escaped}\\b`, "gi"),
+        ""
+      );
+    }
+  }
+
   processed = processed.replace(NON_LETTER_REGEX, " ");
   return normalizeWhitespace(processed);
 }
@@ -441,6 +487,8 @@ export const detectNonEnglishText = (
     minWordLength = 2,
     allowNumbers = true,
     allowAbbreviations = true,
+    customPatterns,
+    excludeWords,
   } = options;
   let { englishThreshold = 0.8 } = options;
 
@@ -449,8 +497,8 @@ export const detectNonEnglishText = (
   }
 
   const francInputText = inputText;
-  const processedText = preprocessText(inputText);
-  const words = processedText.toLowerCase().split(" ");
+  const processedText = preprocessText(inputText, customPatterns, excludeWords);
+  const words = processedText.split(" ");
 
   if (words.length === 0) return false;
   if (words.length <= 4) englishThreshold = 0.6;
@@ -463,7 +511,16 @@ export const detectNonEnglishText = (
     if (cleanWord.length < minWordLength) continue;
 
     totalRelevantWords++;
-    if (isEnglishWordCached(cleanWord, { allowNumbers, allowAbbreviations })) {
+
+    // Check abbreviation on original casing before lowercasing
+    if (allowAbbreviations && ABBREVIATION_REGEX.test(cleanWord)) {
+      englishWordCount++;
+    } else if (
+      isEnglishWordCached(cleanWord.toLowerCase(), {
+        allowNumbers,
+        allowAbbreviations,
+      })
+    ) {
       englishWordCount++;
     }
   }

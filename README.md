@@ -120,16 +120,75 @@ clearLanguageDetectorCaches(); // frees all cached results
 
 Configuration object accepted by `isEnglish` and `detectNonEnglishText`:
 
-| Option              | Type      | Default | Description                                          |
-| ------------------- | --------- | ------- | ---------------------------------------------------- |
-| `englishThreshold`  | `number`  | `0.8`   | Ratio of English words needed to classify as English (0.0–1.0) |
-| `minWordLength`     | `number`  | `2`     | Words shorter than this are skipped during analysis   |
-| `allowNumbers`      | `boolean` | `true`  | Treat standalone numbers as valid English tokens      |
-| `allowAbbreviations`| `boolean` | `true`  | Allow abbreviations as valid English tokens           |
+| Option              | Type        | Default | Description                                          |
+| ------------------- | ----------- | ------- | ---------------------------------------------------- |
+| `englishThreshold`  | `number`    | `0.8`   | Ratio of English words needed to classify as English (0.0–1.0) |
+| `minWordLength`     | `number`    | `2`     | Words shorter than this are skipped during analysis   |
+| `allowNumbers`      | `boolean`   | `true`  | Treat standalone numbers as valid English tokens      |
+| `allowAbbreviations`| `boolean`   | `true`  | Treat uppercase abbreviations (e.g. NATO, FBI) as valid English tokens |
+| `customPatterns`    | `RegExp[]`  | —       | Regex patterns to strip from text before validation   |
+| `excludeWords`      | `string[]`  | —       | Words to remove from text before validation (case-insensitive, whole-word) |
 
 > **Note:** Short texts (4 words or fewer) automatically use a relaxed threshold of `0.6` regardless of the configured `englishThreshold`, to avoid false positives on English fragments.
 
 ## Usage Examples
+
+### Custom Patterns — Strip Unwanted Tokens
+
+Use `customPatterns` to remove regex-matched tokens (e.g. JIRA ticket IDs, codes) before validation:
+
+```ts
+import { isEnglish } from "english-validator";
+
+// JIRA ticket IDs would normally fail the dictionary check
+isEnglish("Fix bug PROJ-1234 in login flow", {
+  customPatterns: [/PROJ-\d+/g],
+});
+// => true
+
+// Multiple patterns
+isEnglish("REF:ABC123 the system is operational CODE:XY99", {
+  customPatterns: [/REF:\w+/g, /CODE:\w+/g],
+});
+// => true
+```
+
+### Exclude Words — Remove Known Non-Dictionary Terms
+
+Use `excludeWords` to drop specific words (brand names, internal jargon) before validation:
+
+```ts
+import { isEnglish } from "english-validator";
+
+// "Kubernetes" and "Grafana" aren't in the dictionary
+isEnglish("Deploy Kubernetes pods and monitor with Grafana dashboards", {
+  excludeWords: ["Kubernetes", "Grafana"],
+});
+// => true
+
+// Case-insensitive and whole-word only
+isEnglish("The ACME widget is working fine", {
+  excludeWords: ["acme"],
+});
+// => true  ("acme" removed, remaining text is English)
+```
+
+### Combining Options
+
+```ts
+import { isEnglish } from "english-validator";
+import type { DetectionOptions } from "english-validator";
+
+const opts: DetectionOptions = {
+  customPatterns: [/TKT-\d+/g],
+  excludeWords: ["Datadog", "Terraform"],
+  englishThreshold: 0.7,
+  allowAbbreviations: true,
+};
+
+isEnglish("TKT-5678 Deploy Terraform stack monitored by Datadog", opts);
+// => true
+```
 
 ### React Component
 
@@ -175,7 +234,7 @@ isEnglish("Hello mundo", strict);  // false
 
 ## How It Works
 
-1. **Preprocessing** — strips document IDs, geographical terms, and special characters
+1. **Preprocessing** — strips document IDs, geographical terms, special characters, user-supplied `customPatterns`, and `excludeWords`
 2. **Dictionary lookup** — each word is checked against a 274k+ English word set
 3. **Non-English screening** — detects European characters (ä, ö, ü, ñ, etc.), word suffixes (-keit, -ción, -zione), and function words (le, la, der, die, das)
 4. **English ratio** — calculates the percentage of recognized English words
