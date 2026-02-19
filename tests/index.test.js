@@ -139,3 +139,106 @@ describe("edge cases", () => {
     expect(result1).toBe(false);
   });
 });
+
+describe("non-English character and pattern detection", () => {
+  test("detects German characters (äöüß)", () => {
+    expect(detectNonEnglishText("Straße")).toBe(true);
+  });
+
+  test("detects French characters (éèêë)", () => {
+    expect(detectNonEnglishText("café résumé naïve")).toBe(true);
+  });
+
+  test("detects Spanish characters (ñ)", () => {
+    expect(detectNonEnglishText("año señor niño")).toBe(true);
+  });
+
+  test("detects Polish characters", () => {
+    expect(detectNonEnglishText("łódź częstochowa")).toBe(true);
+  });
+
+  test("detects Scandinavian characters (åøæ)", () => {
+    expect(detectNonEnglishText("blåbær rødgrød")).toBe(true);
+  });
+
+  test("detects Turkish characters (şğı)", () => {
+    expect(detectNonEnglishText("güneş İstanbul")).toBe(true);
+  });
+
+  test("detects German word endings (-keit, -schaft)", () => {
+    expect(detectNonEnglishText("Freundschaft Möglichkeit")).toBe(true);
+  });
+
+  test("detects Spanish word endings (-ción)", () => {
+    expect(detectNonEnglishText("comunicación información educación")).toBe(true);
+  });
+
+  test("detects non-English function words (le, la, der, die, das)", () => {
+    expect(detectNonEnglishText("le chat est sur la table dans la maison")).toBe(true);
+    expect(detectNonEnglishText("der Hund ist in dem Haus mit dem Mann")).toBe(true);
+  });
+
+  test("detects Dutch distinctive words", () => {
+    expect(detectNonEnglishText("maar omdat hoewel terwijl tenzij indien")).toBe(true);
+  });
+
+  test("detects Portuguese distinctive words", () => {
+    expect(detectNonEnglishText("eu ele ela isto isso aquilo mesmo")).toBe(true);
+  });
+
+  test("detects Turkish distinctive words", () => {
+    expect(detectNonEnglishText("ben sen biz siz onlar bana sana")).toBe(true);
+  });
+
+  test("detects Scandinavian distinctive words", () => {
+    expect(detectNonEnglishText("jeg mig min dig din han ham hans")).toBe(true);
+  });
+});
+
+describe("removeGeographicalTermsExact edge cases", () => {
+  test("handles null input", () => {
+    expect(detectNonEnglishText(null)).toBe(false);
+  });
+
+  test("handles non-string input", () => {
+    expect(detectNonEnglishText(123)).toBe(false);
+  });
+});
+
+describe("matchesDocumentPattern edge cases", () => {
+  test("returns false for non-string types", () => {
+    expect(matchesDocumentPattern(123)).toBe(false);
+    expect(matchesDocumentPattern({})).toBe(false);
+  });
+});
+
+describe("word-level detection", () => {
+  test("handles contractions as English", () => {
+    expect(isEnglish("I can't believe it's not butter")).toBe(true);
+  });
+
+  test("handles words with non-English characters as non-English", () => {
+    expect(detectNonEnglishText("über kühl größe straße")).toBe(true);
+  });
+
+  test("short text uses lower threshold", () => {
+    expect(isEnglish("hello world")).toBe(true);
+  });
+
+  test("handles text with document patterns mixed with English", () => {
+    expect(detectNonEnglishText("The AEM01-WI-DSU06-SD01 document is ready for review")).toBe(false);
+  });
+
+  test("franc cache eviction works when limit exceeded", () => {
+    for (let i = 0; i < 5; i++) {
+      detectNonEnglishText(`This is test sentence number ${i} for checking cache behavior in the system`);
+    }
+    expect(detectNonEnglishText("The quick brown fox jumps over the lazy dog")).toBe(false);
+  });
+
+  test("word cache eviction works when limit exceeded", () => {
+    const longText = "The quick brown fox jumps over the lazy dog and runs through the field with great speed and energy";
+    detectNonEnglishText(longText);
+    expect(isEnglish(longText)).toBe(true);
+  });
+});
