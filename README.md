@@ -131,6 +131,34 @@ Configuration object accepted by `isEnglish` and `detectNonEnglishText`:
 
 > **Note:** Short texts (4 words or fewer) automatically use a relaxed threshold of `0.6` regardless of the configured `englishThreshold`, to avoid false positives on English fragments.
 
+#### Quick Examples
+
+```ts
+import { isEnglish } from "english-validator";
+
+// englishThreshold — lower it to allow mixed-language text
+isEnglish("Hello mundo friend", { englishThreshold: 0.5 });       // true (50%+ English)
+
+// minWordLength — skip short words like "a", "I" during analysis
+isEnglish("I am a big fan of this", { minWordLength: 3 });         // true
+
+// allowNumbers — treat "42" as a valid English token (default: true)
+isEnglish("Order 42 is ready", { allowNumbers: true });            // true
+
+// allowAbbreviations — treat "NATO", "FBI" as valid (default: true)
+isEnglish("NATO signed the agreement", { allowAbbreviations: true }); // true
+
+// customPatterns — strip JIRA IDs before validation
+isEnglish("Fix bug PROJ-1234 in login flow", {
+  customPatterns: [/[A-Z]+-\d+/g],
+});                                                                 // true
+
+// excludeWords — remove brand names / jargon before validation
+isEnglish("Deploy Kubernetes pods and monitor dashboards", {
+  excludeWords: ["Kubernetes"],
+});                                                                 // true
+```
+
 ## Usage Examples
 
 ### Custom Patterns — Strip Unwanted Tokens
