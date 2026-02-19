@@ -374,6 +374,7 @@ function hasOnlyEnglishCharacters(word: string): boolean {
 function isEnglishWord(word: string, options: WordOptions): boolean {
   if (!hasOnlyEnglishCharacters(word)) return false;
   if (options.allowNumbers && NUMBERS_ONLY_REGEX.test(word)) return true;
+  if (options.allowAbbreviations && ABBREVIATION_REGEX.test(word)) return true;
   if (hasObviousNonEnglishIndicators(word)) return false;
   if (englishDictionary.has(word)) return true;
 
