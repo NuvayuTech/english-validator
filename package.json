@@ -1,14 +1,14 @@
 {
   "name": "english-validator",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Detect whether a sentence is English or non-English. Returns true/false with high accuracy using dictionary lookup and trigram analysis.",
-  "main": "dist/index.cjs.js",
+  "main": "dist/index.cjs",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs.js",
+      "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
     }
   },
@@ -18,7 +18,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "rollup -c",
+    "build": "rollup -c && node -e \"require('fs').writeFileSync('dist/index.mjs', \\\"import cjsModule from './index.cjs';\\nexport const { isEnglish, detectNonEnglishText, matchesDocumentPattern, clearLanguageDetectorCaches } = cjsModule;\\n\\\")\"",
     "test": "jest --coverage",
     "prepublishOnly": "npm run build && npm test",
     "lint": "eslint src/",

@@ -50,7 +50,7 @@ jobs:
           fi
 
       - name: Verify CJS import
-        run: node -e "const m = require('./dist/index.cjs.js'); console.log('CJS OK:', typeof m.isEnglish)"
+        run: node -e "const m = require('./dist/index.cjs'); console.log('CJS OK:', typeof m.isEnglish)"
 
       - name: Verify ESM import
         run: node --input-type=module -e "import { isEnglish } from './dist/index.mjs'; console.log('ESM OK:', typeof isEnglish)"
