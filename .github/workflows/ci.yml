@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (TypeScript)
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+
+      - name: Test with coverage
+        run: npx jest --coverage --coverageReporters=text --coverageReporters=lcov
+
+      - name: Enforce 80% coverage
+        run: |
+          npx jest --coverage --coverageReporters=json-summary 2>/dev/null
+          COVERAGE=$(node -e "
+            const c = require('./coverage/coverage-summary.json');
+            console.log(Math.round(c.total.statements.pct));
+          ")
+          echo "Coverage: ${COVERAGE}%"
+          if [ "$COVERAGE" -lt 80 ]; then
+            echo "::error::Coverage ${COVERAGE}% is below 80% threshold"
+            exit 1
+          fi
+
+      - name: Verify CJS import
+        run: node -e "const m = require('./dist/index.cjs.js'); console.log('CJS OK:', typeof m.isEnglish)"
+
+      - name: Verify ESM import
+        run: node --input-type=module -e "import { isEnglish } from './dist/index.mjs'; console.log('ESM OK:', typeof isEnglish)"
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
