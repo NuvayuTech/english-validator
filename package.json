@@ -41,12 +41,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Jatverma54/english-validator.git"
+    "url": "https://github.com/NuvayuTech/english-validator.git"
   },
   "bugs": {
-    "url": "https://github.com/Jatverma54/english-validator/issues"
+    "url": "https://github.com/NuvayuTech/english-validator/issues"
   },
-  "homepage": "https://github.com/Jatverma54/english-validator#readme",
+  "homepage": "https://github.com/NuvayuTech/english-validator#readme",
   "devDependencies": {
     "franc": "^6.2.0",
     "@rollup/plugin-commonjs": "^28.0.0",
