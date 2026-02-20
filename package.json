@@ -63,5 +63,8 @@
     "@babel/preset-typescript": "^7.24.0",
     "babel-jest": "^29.7.0",
     "rollup": "^4.24.0"
+  },
+  "overrides": {
+    "minimatch": ">=10.2.1"
   }
 }
