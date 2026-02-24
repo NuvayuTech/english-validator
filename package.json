@@ -1,6 +1,6 @@
 {
   "name": "english-validator",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Detect whether a sentence is English or non-English. Returns true/false with high accuracy using dictionary lookup and trigram analysis.",
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
