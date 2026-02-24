@@ -81,7 +81,7 @@ Returns `true` if the text is English, `false` otherwise.
 
 | Parameter | Type               | Description                        |
 | --------- | ------------------ | ---------------------------------- |
-| `text`    | `string \| null`   | Text to analyse                    |
+| `text`    | `string \| null \| undefined`   | Text to analyse. Returns `true` for empty/null/undefined.                    |
 | `options` | `DetectionOptions` | Optional configuration (see below) |
 
 ```ts
@@ -276,13 +276,36 @@ isEnglish("Hello mundo", strict);  // false
 1. **Preprocessing** — strips document IDs, geographical terms, special characters, user-supplied `customPatterns`, and `excludeWords`
 2. **Dictionary lookup** — each word is checked against a 274k+ English word set
 3. **Non-English screening** — detects European characters (ä, ö, ü, ñ, etc.), word suffixes (-keit, -ción, -zione), and function words (le, la, der, die, das)
-4. **English ratio** — calculates the percentage of recognized English words
-5. **Trigram fallback** — if the ratio is below the threshold, [franc](https://github.com/wooorm/franc) provides a statistical language classification as a tiebreaker
-6. **Result** — returns a boolean
+4. **Contraction resolution** — splits contractions on apostrophes (e.g. `don't` → `don`) and rechecks the base word against the dictionary
+5. **English ratio** — calculates the percentage of recognized English words
+6. **Trigram fallback** — if the ratio is below the threshold, [franc](https://github.com/wooorm/franc) provides a statistical language classification as a tiebreaker
+7. **Result** — returns a boolean
 
 ## Supported Non-English Language Detection
 
-Detects non-English text across many languages including German, French, Spanish, Italian, Portuguese, Dutch, Polish, Turkish, and Scandinavian languages — both via character/word patterns and trigram analysis.
+The library detects non-English text across multiple language families using three complementary techniques: character analysis, suffix matching, and vocabulary/function-word detection.
+
+| Language | Characters | Suffixes | Vocabulary / Function Words |
+|---|---|---|---|
+| **German** | ä ö ü ß | -keit, -schaft | und, oder, aber, wenn, weil, dass, nicht, kein · der, die, das, den, dem, ein, eine |
+| **French** | é è ê ë à â ç ù û ÿ æ œ | -eur | est, sont, être, avoir, faire, quand, où, pourquoi · le, la, les, du, des, dans, avec |
+| **Spanish** | ñ á í ó ú ¡ ¿ | -ción | que, como, porque, pero, cuando, donde, este, esta · el, los, las, del, al, con, sin, por |
+| **Italian** | ì ò | -zione | sono, essere, avere, fare, dire, come, quando, dove · il, lo, gli |
+| **Dutch** | — | -baar, -lijk | maar, want, omdat, hoewel, terwijl, dus · het, een, op, aan, voor, met, door |
+| **Portuguese** | ção | -agem | eu, tu, ele, ela, nós, isto, isso, aquilo · os, dos, das, nos, nas, um, uma |
+| **Turkish** | ş ğ ı | — | ben, sen, biz, siz, onlar, bana, sana, benim, senin |
+| **Scandinavian** | å ø æ | — | jeg, mig, min, mit, dig, din, han, hun, den, det, denne, dette |
+| **Polish** | ł ń ś ź ż ą ć ę | — | *(character-level detection)* |
+
+## Performance
+
+| Aspect | Detail |
+|---|---|
+| **Dictionary lookups** | O(1) via `Set` (274k+ entries) |
+| **Word cache** | LRU with 5,000 entry limit |
+| **Franc cache** | LRU with 1,000 entry limit |
+| **Regex patterns** | Precompiled at module load — zero runtime compilation |
+| **Geographical patterns** | Built once from dictionary data at module initialisation |
 
 ## Running Tests
 
