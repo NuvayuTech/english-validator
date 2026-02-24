@@ -3,7 +3,7 @@ const {
   detectNonEnglishText,
   matchesDocumentPattern,
   clearLanguageDetectorCaches,
-} = require("./dist/index.cjs.js");
+} = require("./dist/index.cjs");
 
 // ─── Basic English Detection ─────────────────────────────────────────────────
 

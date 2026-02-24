@@ -87,7 +87,7 @@ Returns `true` if the text is English, `false` otherwise.
 ```ts
 isEnglish("Hello world");          // true
 isEnglish("Bonjour le monde");     // false
-isEnglish("", { englishThreshold: 0.5 }); // false (empty)
+isEnglish("", { englishThreshold: 0.5 }); // true (empty)
 ```
 
 ### `detectNonEnglishText(text, options?)`
