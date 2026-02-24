@@ -3,8 +3,8 @@ import {
   DOCUMENT_PATTERNS_REMOVE,
   GEO_TERM_PATTERNS,
   NON_LETTER_REGEX,
-} from "./constants";
-import { isNonEmptyString, normalizeWhitespace } from "./utils";
+} from './constants';
+import { isNonEmptyString, normalizeWhitespace } from './utils';
 
 // ─── Document Pattern Operations ──────────────────────────────────────────────
 
@@ -16,9 +16,7 @@ import { isNonEmptyString, normalizeWhitespace } from "./utils";
  * @param text - The text to check for document ID patterns
  * @returns true if at least one document ID pattern is found
  */
-export const matchesDocumentPattern = (
-  text: string | null | undefined
-): boolean => {
+export const matchesDocumentPattern = (text: string | null | undefined): boolean => {
   if (!isNonEmptyString(text)) return false;
   return DOCUMENT_PATTERNS_MATCH.some((pattern) => pattern.test(text));
 };
@@ -34,7 +32,7 @@ export const matchesDocumentPattern = (
 function removeDocumentPatterns(text: string): string {
   let cleaned = text;
   for (const pattern of DOCUMENT_PATTERNS_REMOVE) {
-    cleaned = cleaned.replace(pattern, "");
+    cleaned = cleaned.replace(pattern, '');
   }
   return normalizeWhitespace(cleaned);
 }
@@ -51,14 +49,12 @@ function removeDocumentPatterns(text: string): string {
  * @param inputText - Input text containing potential geographical terms
  * @returns Text with geographical terms removed and whitespace normalised
  */
-function removeGeographicalTerms(
-  inputText: string | null | undefined
-): string {
+function removeGeographicalTerms(inputText: string | null | undefined): string {
   if (!isNonEmptyString(inputText)) return inputText as unknown as string;
 
   let result = inputText;
   for (const pattern of GEO_TERM_PATTERNS) {
-    result = result.replace(pattern, "");
+    result = result.replace(pattern, '');
   }
   return normalizeWhitespace(result);
 }
@@ -86,7 +82,7 @@ function removeGeographicalTerms(
 export function preprocessText(
   text: string,
   customPatterns?: RegExp[],
-  excludeWords?: string[]
+  excludeWords?: string[],
 ): string {
   let processed = removeDocumentPatterns(text);
   processed = removeGeographicalTerms(processed);
@@ -94,21 +90,18 @@ export function preprocessText(
   // Apply user-supplied regex patterns
   if (customPatterns && customPatterns.length > 0) {
     for (const pattern of customPatterns) {
-      processed = processed.replace(pattern, "");
+      processed = processed.replace(pattern, '');
     }
   }
 
   // Remove user-supplied words (case-insensitive, whole-word match)
   if (excludeWords && excludeWords.length > 0) {
     for (const word of excludeWords) {
-      const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      processed = processed.replace(
-        new RegExp(`\\b${escaped}\\b`, "gi"),
-        ""
-      );
+      const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      processed = processed.replace(new RegExp(`\\b${escaped}\\b`, 'gi'), '');
     }
   }
 
-  processed = processed.replace(NON_LETTER_REGEX, " ");
+  processed = processed.replace(NON_LETTER_REGEX, ' ');
   return normalizeWhitespace(processed);
 }

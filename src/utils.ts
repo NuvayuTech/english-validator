@@ -1,4 +1,4 @@
-import { WHITESPACE_REGEX } from "./constants";
+import { WHITESPACE_REGEX } from './constants';
 
 // ─── Utility Helpers (DRY) ───────────────────────────────────────────────────
 
@@ -16,12 +16,7 @@ import { WHITESPACE_REGEX } from "./constants";
  * @param key   - Key for the new entry
  * @param value - Value for the new entry
  */
-export function cacheSet<K, V>(
-  cache: Map<K, V>,
-  limit: number,
-  key: K,
-  value: V
-): void {
+export function cacheSet<K, V>(cache: Map<K, V>, limit: number, key: K, value: V): void {
   if (cache.size >= limit) {
     const firstKey = cache.keys().next().value;
     if (firstKey !== undefined) cache.delete(firstKey);
@@ -37,7 +32,7 @@ export function cacheSet<K, V>(
  * @returns true if value is a string with length > 0
  */
 export function isNonEmptyString(value: unknown): value is string {
-  return typeof value === "string" && value.length > 0;
+  return typeof value === 'string' && value.length > 0;
 }
 
 /**
@@ -49,5 +44,5 @@ export function isNonEmptyString(value: unknown): value is string {
  * @returns Whitespace-normalised text
  */
 export function normalizeWhitespace(text: string): string {
-  return text.replace(WHITESPACE_REGEX, " ").trim();
+  return text.replace(WHITESPACE_REGEX, ' ').trim();
 }

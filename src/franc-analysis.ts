@@ -1,7 +1,7 @@
-import { francAll } from "franc";
-import { FRANC_CACHE_LIMIT } from "./constants";
-import { LanguageResult } from "./types";
-import { cacheSet } from "./utils";
+import { francAll } from 'franc';
+import { FRANC_CACHE_LIMIT } from './constants';
+import { LanguageResult } from './types';
+import { cacheSet } from './utils';
 
 // ─── Core Language Analysis ───────────────────────────────────────────────────
 
@@ -28,7 +28,7 @@ export function francLanguageAnalysis(cleanText: string): LanguageResult {
   const detectedLanguage = francAll(cleanText);
 
   for (const [lang, conf] of detectedLanguage.slice(0, 5)) {
-    if (lang === "eng" && conf >= 0.9) {
+    if (lang === 'eng' && conf >= 0.9) {
       cacheSet(francCache, FRANC_CACHE_LIMIT, cleanText, [lang, conf]);
       return { language: lang, confidence: conf };
     }

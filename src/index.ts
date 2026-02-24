@@ -1,15 +1,14 @@
-import { ABBREVIATION_REGEX, WORD_PUNCTUATION_REGEX } from "./constants";
-import { francLanguageAnalysis, francCache } from "./franc-analysis";
-import { matchesDocumentPattern } from "./preprocessing";
-import { preprocessText } from "./preprocessing";
-import { DetectionOptions } from "./types";
-import { isNonEmptyString } from "./utils";
-import { isEnglishWordCached, wordCache } from "./word-analysis";
+import { ABBREVIATION_REGEX, WORD_PUNCTUATION_REGEX } from './constants';
+import { francLanguageAnalysis, francCache } from './franc-analysis';
+import { preprocessText } from './preprocessing';
+import { DetectionOptions } from './types';
+import { isNonEmptyString } from './utils';
+import { isEnglishWordCached, wordCache } from './word-analysis';
 
 // ─── Re-exports ───────────────────────────────────────────────────────────────
 
-export { matchesDocumentPattern } from "./preprocessing";
-export type { DetectionOptions } from "./types";
+export { matchesDocumentPattern } from './preprocessing';
+export type { DetectionOptions } from './types';
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
@@ -39,7 +38,7 @@ export type { DetectionOptions } from "./types";
  */
 export const detectNonEnglishText = (
   inputText: string | null | undefined,
-  options: DetectionOptions = {}
+  options: DetectionOptions = {},
 ): boolean => {
   const {
     minWordLength = 2,
@@ -56,7 +55,7 @@ export const detectNonEnglishText = (
 
   const francInputText = inputText;
   const processedText = preprocessText(inputText, customPatterns, excludeWords);
-  const words = processedText.split(" ");
+  const words = processedText.split(' ');
 
   if (words.length === 0) return false;
   if (words.length <= 4) englishThreshold = 0.6;
@@ -65,7 +64,7 @@ export const detectNonEnglishText = (
   let totalRelevantWords = 0;
 
   for (const word of words) {
-    const cleanWord = word.replace(WORD_PUNCTUATION_REGEX, "").trim();
+    const cleanWord = word.replace(WORD_PUNCTUATION_REGEX, '').trim();
     if (cleanWord.length < minWordLength) continue;
 
     totalRelevantWords++;
@@ -83,14 +82,13 @@ export const detectNonEnglishText = (
     }
   }
 
-  const englishRatio =
-    totalRelevantWords > 0 ? englishWordCount / totalRelevantWords : 1.0;
+  const englishRatio = totalRelevantWords > 0 ? englishWordCount / totalRelevantWords : 1.0;
 
   if (englishRatio >= englishThreshold) return false;
 
   const { language, confidence } = francLanguageAnalysis(francInputText);
 
-  if (language === "eng" && confidence >= 0.9 && englishRatio >= 0.7) {
+  if (language === 'eng' && confidence >= 0.9 && englishRatio >= 0.7) {
     return false;
   }
 
@@ -111,7 +109,7 @@ export const detectNonEnglishText = (
  */
 export const isEnglish = (
   inputText: string | null | undefined,
-  options: DetectionOptions = {}
+  options: DetectionOptions = {},
 ): boolean => {
   return !detectNonEnglishText(inputText, options);
 };

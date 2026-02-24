@@ -3,8 +3,8 @@ import {
   NON_ENGLISH_ENDINGS_REGEX,
   NON_ENGLISH_FUNCTION_WORDS_REGEX,
   NON_ENGLISH_WORD_PATTERNS,
-} from "./constants";
-import { isNonEmptyString } from "./utils";
+} from './constants';
+import { isNonEmptyString } from './utils';
 
 // ─── Non-English Indicator Checks ─────────────────────────────────────────────
 
@@ -60,19 +60,14 @@ export function hasNonEnglishWordPatterns(text: string): boolean {
  * @param text - Word or short phrase to evaluate
  * @returns true if obvious non-English indicators are found
  */
-export function hasObviousNonEnglishIndicators(
-  text: string | null | undefined
-): boolean {
+export function hasObviousNonEnglishIndicators(text: string | null | undefined): boolean {
   if (!isNonEmptyString(text) || text.length < 2) return false;
 
-  if (!text.includes(" ")) {
+  if (!text.includes(' ')) {
     if (hasNonEnglishCharacters(text) || hasNonEnglishEndings(text)) {
       return true;
     }
   }
 
-  return (
-    hasNonEnglishWordPatterns(text) ||
-    NON_ENGLISH_FUNCTION_WORDS_REGEX.test(text)
-  );
+  return hasNonEnglishWordPatterns(text) || NON_ENGLISH_FUNCTION_WORDS_REGEX.test(text);
 }

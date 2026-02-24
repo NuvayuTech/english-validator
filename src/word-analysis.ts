@@ -1,13 +1,13 @@
-import { englishDictionary } from "./dictionary";
+import { englishDictionary } from './dictionary';
 import {
   ABBREVIATION_REGEX,
   ENGLISH_CHARS_REGEX,
   NUMBERS_ONLY_REGEX,
   WORD_CACHE_LIMIT,
-} from "./constants";
-import { WordOptions } from "./types";
-import { hasObviousNonEnglishIndicators } from "./non-english-checks";
-import { cacheSet } from "./utils";
+} from './constants';
+import { WordOptions } from './types';
+import { hasObviousNonEnglishIndicators } from './non-english-checks';
+import { cacheSet } from './utils';
 
 // ─── Word-Level Analysis ──────────────────────────────────────────────────────
 
@@ -67,10 +67,7 @@ function isEnglishWord(word: string, options: WordOptions): boolean {
  * @param options - Controls number and abbreviation handling
  * @returns true if the word is recognised as English
  */
-export function isEnglishWordCached(
-  word: string,
-  options: WordOptions
-): boolean {
+export function isEnglishWordCached(word: string, options: WordOptions): boolean {
   const cacheKey = `${word}_${options.allowNumbers}_${options.allowAbbreviations}`;
 
   if (wordCache.has(cacheKey)) return wordCache.get(cacheKey)!;

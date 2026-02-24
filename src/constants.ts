@@ -1,4 +1,4 @@
-import { wordsToRemove } from "./dictionary";
+import { wordsToRemove } from './dictionary';
 
 // ─── Cache Limits ─────────────────────────────────────────────────────────────
 
@@ -29,8 +29,7 @@ export const DOCUMENT_PATTERNS_REMOVE: readonly RegExp[] = [
  * Covers German (äöüß), French (éèêë), Spanish (ñ), Italian (ìò),
  * Scandinavian (åøæ), Polish (łńś), and Turkish (şğı).
  */
-export const NON_ENGLISH_CHARS_REGEX =
-  /[äöüßéèêëàâçùûÿæœáíóúñ¡¿ìòåøąćęłńśźżşğı]/i;
+export const NON_ENGLISH_CHARS_REGEX = /[äöüßéèêëàâçùûÿæœáíóúñ¡¿ìòåøąćęłńśźżşğı]/i;
 
 /**
  * Single combined regex for word suffixes typical of non-English languages.
@@ -60,15 +59,13 @@ export const NON_ENGLISH_WORD_PATTERNS: readonly RegExp[] = [
 
 /** Precompiled geographical term patterns — built once at module load. */
 export const GEO_TERM_PATTERNS: readonly RegExp[] = wordsToRemove.map(
-  ([word]: [string, boolean]) =>
-    new RegExp(`\\b${word}\\b|\\b${word}s\\b`, "i")
+  ([word]: [string, boolean]) => new RegExp(`\\b${word}\\b|\\b${word}s\\b`, 'i'),
 );
 
 // ─── Text Processing Patterns ─────────────────────────────────────────────────
 
 /** Regex to strip punctuation from individual words. */
-export const WORD_PUNCTUATION_REGEX =
-  /['''\-""`~!@#$%^&*()+={}[\]|\\:";'<>?,./]/g;
+export const WORD_PUNCTUATION_REGEX = /['''\-""`~!@#$%^&*()+={}[\]|\\:";'<>?,./]/g;
 
 /** Regex for collapsing whitespace runs. */
 export const WHITESPACE_REGEX = /\s+/g;

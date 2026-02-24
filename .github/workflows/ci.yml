@@ -30,6 +30,12 @@ jobs:
       - name: Lint (TypeScript)
         run: npx tsc --noEmit
 
+      - name: Lint (ESLint)
+        run: npm run lint
+
+      - name: Check formatting (Prettier)
+        run: npm run format:check
+
       - name: Build
         run: npm run build
 
