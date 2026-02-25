@@ -1,0 +1,119 @@
+name: Publish to NPM
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (must match package.json)'
+        required: true
+        type: string
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (TypeScript)
+        run: npx tsc --noEmit
+
+      - name: Lint (ESLint)
+        run: npm run lint
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Test with coverage
+        run: npm test
+
+      - name: Enforce 80% coverage
+        run: |
+          npx jest --coverage --coverageReporters=json-summary 2>/dev/null
+          COVERAGE=$(node -e "
+            const c = require('./coverage/coverage-summary.json');
+            console.log(Math.round(c.total.statements.pct));
+          ")
+          echo "Coverage: ${COVERAGE}%"
+          if [ "$COVERAGE" -lt 80 ]; then
+            echo "::error::Coverage ${COVERAGE}% is below 80% threshold"
+            exit 1
+          fi
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify CJS import
+        run: node -e "const m = require('./dist/index.cjs'); console.log('CJS OK:', typeof m.isEnglish)"
+
+      - name: Verify ESM import
+        run: node --input-type=module -e "import { isEnglish } from './dist/index.mjs'; console.log('ESM OK:', typeof isEnglish)"
+
+      - name: Check version match
+        run: |
+          PACKAGE_VERSION=$(node -e "console.log(require('./package.json').version)")
+          INPUT_VERSION="${{ github.event.inputs.version }}"
+          echo "Package version: $PACKAGE_VERSION"
+          echo "Input version: $INPUT_VERSION"
+          if [ "$PACKAGE_VERSION" != "$INPUT_VERSION" ]; then
+            echo "::error::Version mismatch! package.json ($PACKAGE_VERSION) != input ($INPUT_VERSION)"
+            exit 1
+          fi
+
+      - name: Publish to NPM
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.event.inputs.version }}
+          release_name: Release v${{ github.event.inputs.version }}
+          body: |
+            ## Changes in this release
+            
+            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
+            
+            **Installation:**
+            ```bash
+            npm install english-validator@${{ github.event.inputs.version }}
+            ```
+            
+            **NPM Package:** https://www.npmjs.com/package/english-validator/v/${{ github.event.inputs.version }}
+          draft: false
+          prerelease: false
