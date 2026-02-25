@@ -90,7 +90,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Trigram-based language analysis via `franc`
 - Heuristic detection for 9+ non-English language families
 - LRU caching for performance (franc: 1,000 entries, word: 5,000 entries)
-- Contraction resolution (e.g., `don't` → `do`)
+- Contraction resolution (e.g., `don't` → `don`)
 - Geographic term filtering (865 patterns)
 - Zero runtime dependencies for consumers
 

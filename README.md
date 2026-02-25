@@ -3,6 +3,7 @@
 > Detect whether a sentence is English or non-English. Returns `true` / `false` with high accuracy.
 
 [![npm version](https://img.shields.io/npm/v/english-validator.svg)](https://www.npmjs.com/package/english-validator)
+[![CI](https://github.com/NuvayuTech/english-validator/actions/workflows/ci.yml/badge.svg)](https://github.com/NuvayuTech/english-validator/actions/workflows/ci.yml)
 [![license](https://img.shields.io/npm/l/english-validator.svg)](https://github.com/NuvayuTech/english-validator/blob/main/LICENSE)
 
 ## Features

@@ -17,10 +17,11 @@ npm test
 2. Create a feature branch: `git checkout -b feat/my-feature`
 3. Write a **failing test first** (TDD)
 4. Implement the minimal code to pass the test
-5. Ensure all tests pass: `npm test`
+5. Run all checks: `npm run check` (lint + format + tests)
 6. Ensure build works: `npm run build`
-7. Commit with a descriptive message
-8. Open a Pull Request against `main`
+7. Update `CHANGELOG.md` under `## [Unreleased]`
+8. Commit with a descriptive message
+9. Open a Pull Request against `main`
 
 ## Code Standards
 
