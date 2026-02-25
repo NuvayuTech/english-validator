@@ -14,6 +14,7 @@
 - **Built-in caching** — LRU-style memoization for fast repeated lookups
 - **TypeScript support** — ships with full type declarations and JSDoc
 - **ESM & CJS** — works with `import` and `require` (zero runtime dependencies)
+- **Framework-agnostic** — works with React, Angular, Vue, Svelte, Node.js, Deno, Bun, and any JavaScript runtime
 
 ## Installation
 
@@ -230,6 +231,46 @@ function LanguageCheck({ text }: { text: string }) {
     </div>
   );
 }
+```
+
+### Angular Component
+
+```ts
+import { Component } from "@angular/core";
+import { isEnglish } from "english-validator";
+
+@Component({
+  selector: "app-language-check",
+  template: `<span>{{ isEng ? '✅ English' : '❌ Not English' }}</span>`,
+})
+export class LanguageCheckComponent {
+  isEng = false;
+
+  check(text: string) {
+    this.isEng = isEnglish(text);
+  }
+}
+```
+
+### Vue Component
+
+```vue
+<script setup lang="ts">
+import { ref } from "vue";
+import { isEnglish } from "english-validator";
+
+const text = ref("");
+const result = ref<boolean | null>(null);
+
+function check() {
+  result.value = isEnglish(text.value);
+}
+</script>
+
+<template>
+  <input v-model="text" @input="check" placeholder="Type something…" />
+  <span v-if="result !== null">{{ result ? '✅ English' : '❌ Not English' }}</span>
+</template>
 ```
 
 ### Node.js API Middleware
